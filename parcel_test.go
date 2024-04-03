@@ -174,7 +174,6 @@ func TestGetByClient(t *testing.T) {
     // get by client
     storedParcels, err := store.GetByClient(client)
     require.NoError(t, err)
-    assert.Equal(t, len(parcels), len(storedParcels))
     require.Equal(t, parcels, storedParcels)
 }
 
