@@ -45,26 +45,23 @@ func TestAddGetDelete(t *testing.T) {
     // добавляем новую посылку в БД, проверяем отсутствие ошибки и наличии идентификатора
     id, err := store.Add(parcel)
     require.NoError(t, err)
-    require.NotEmpty(t, id)
+    require.Positive(t, id)
+    parcel.Number = id
 
     // get
     // получаем только что добавленную посылку, проверяем отсутствие ошибки
     // проверяем, что значения всех полей в полученном объекте совпадают со значениями полей в переменной parcel
     stored, err := store.Get(id)
     require.NoError(t, err)
-
-    assert.Equal(t, parcel.Client, stored.Client)
-    assert.Equal(t, parcel.Status, stored.Status)
-    assert.Equal(t, parcel.Address, stored.Address)
-    assert.Equal(t, parcel.CreatedAt, stored.CreatedAt)
+    assert.Equal(t, parcel, stored)
 
     // delete
-
     err = store.Delete(id) 
     require.NoError(t, err)
 
     _, err = store.Get(id)
-    require.Equal(t, sql.ErrNoRows, err)
+    require.Error(t, err)
+    assert.ErrorIs(t, err, sql.ErrNoRows)
 }
 
 // TestSetAddress проверяет обновление адреса
@@ -136,7 +133,6 @@ func TestSetStatus(t *testing.T) {
     // получаем добавленную посылку и убедитесь, что статус обновился
     stored, err := store.Get(id)
     require.NoError(t, err)
-
     assert.Equal(t, nextStatus, stored.Status)
 }
 
@@ -157,7 +153,7 @@ func TestGetByClient(t *testing.T) {
         getTestParcel(),
         getTestParcel(),
     }
-    parcelMap := map[int]Parcel{}
+
 
     // задаём всем посылкам один и тот же идентификатор клиента
     client := randRange.Intn(10_000_000)
@@ -173,22 +169,12 @@ func TestGetByClient(t *testing.T) {
 
         // обновляем идентификатор добавленной у посылки
         parcels[i].Number = id
-
-        // сохраняем добавленную посылку в структуру map, чтобы её можно было легко достать по идентификатору посылки
-        parcelMap[id] = parcels[i]
     }
 
     // get by client
     storedParcels, err := store.GetByClient(client)
     require.NoError(t, err)
     assert.Equal(t, len(parcels), len(storedParcels))
-
-    // check
-    for _, parcel := range storedParcels {
-
-        require.Contains(t, parcelMap, parcel.Number)
-
-        require.Equal(t, parcelMap[parcel.Number], parcel)
-    }
+    require.Equal(t, parcels, storedParcels)
 }
 
