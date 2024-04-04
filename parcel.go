@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 type ParcelStore struct {
@@ -21,13 +20,11 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
     sql.Named("address", p.Address),
     sql.Named("created_at", p.CreatedAt))
     if err != nil {
-        fmt.Println(err)
         return 0, err
     }
     // возвращаем идентификатор последней добавленной записи
     id, err := res.LastInsertId()
     if err != nil {
-        fmt.Println(err)
         return 0, err
     }
     return int(id), nil
@@ -89,7 +86,6 @@ func (s ParcelStore) SetAddress(number int, address string) error {
     sql.Named("status", ParcelStatusRegistered))
 
     if err != nil {
-        fmt.Println(err)
         return err
     }
     return nil
@@ -102,7 +98,6 @@ func (s ParcelStore) Delete(number int) error {
     sql.Named("status", ParcelStatusRegistered))
 
     if err != nil {
-        fmt.Println(err)
         return err
     }
 
